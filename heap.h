@@ -2,6 +2,7 @@
 #define HEAP_H
 #include <functional>
 #include <stdexcept>
+#include <vector>
 
 template <typename T, typename PComparator = std::less<T> >
 class Heap
@@ -61,14 +62,52 @@ public:
 
 private:
   /// Add whatever helper functions and data members you need below
+  std::vector<T> heap_;
+  size_t m_ary_;
+  PComparator comp_;
 
+  // restoring heap property after insertion (element needs to be properly placed)
+  void heapifyUp(size_t idx);
 
-
-
+  // restoring heap property after removing (last element becomes first, gotta go down)
+  void heapifyDown(size_t idx);
 };
 
 // Add implementation of member functions here
 
+template <typename T, typename PComparator>
+Heap<T,PComparator>::Heap(int m, PComparator c) : m_ary_(m), comp_(c)
+{
+  if(m < 2) {
+    throw std::invalid_argument("Cannot have < binary heap");
+  }
+}
+
+
+template <typename T, typename PComparator>
+Heap<T,PComparator>::~Heap() { }
+
+
+template <typename T, typename PComparator>
+bool Heap<T,PComparator>::empty() const
+{
+  return heap_.empty();
+}
+
+
+template <typename T, typename PComparator>
+size_t Heap<T,PComparator>::size() const
+{
+  return heap_.size();
+}
+
+
+template <typename T, typename PComparator>
+void Heap<T,PComparator>::push(const T& item)
+{
+  heap_.push_back(item);
+  heapifyUp(heap_.size() - 1);
+}
 
 // We will start top() for you to handle the case of 
 // calling top on an empty heap
@@ -81,14 +120,12 @@ T const & Heap<T,PComparator>::top() const
     // ================================
     // throw the appropriate exception
     // ================================
-
-
+    throw std::underflow_error("Empty heap!");
   }
   // If we get here we know the heap has at least 1 item
   // Add code to return the top element
 
-
-
+  return heap_[0];
 }
 
 
@@ -101,12 +138,60 @@ void Heap<T,PComparator>::pop()
     // ================================
     // throw the appropriate exception
     // ================================
-
-
+    throw std::underflow_error("Empty heap!");
   }
+  heap_[0] = heap_[heap_.size() - 1];
+  heap_.pop_back();
 
+  if(!empty())
+  {
+    heapifyDown(0);
+  }
+}
 
+template <typename T, typename PComparator>
+void Heap<T,PComparator>::heapifyUp(size_t idx)
+{
+  while(idx > 0 && comp_(heap_[(idx - 1) / m_ary_], heap_[idx]))
+  {
+    std::swap(heap_[(idx - 1) / m_ary_], heap_[idx]);
+    idx = (idx - 1) / m_ary_;
+  }
+}
 
+template <typename T, typename PComparator>
+void Heap<T,PComparator>::heapifyDown(size_t idx)
+{
+    size_t childIndex = m_ary_ * idx + 1;
+    size_t bestChildIndex = childIndex;
+
+    while(childIndex < heap_.size())
+    {
+      // looking through all the children of the current node, find 
+      //  "best" child to swap down with (either min or max, based on comp)
+      for(size_t i = 1; i < m_ary_ && (childIndex + i) < heap_.size(); ++i)
+      {
+        if(comp_(heap_[bestChildIndex], heap_[childIndex + i]))
+        {
+          bestChildIndex = childIndex + i;
+        }
+      }
+
+      // check if a swap needs to occur
+      if(bestChildIndex < heap_.size() && comp_(heap_[bestChildIndex], heap_[idx]))
+      {
+        std::swap(heap_[idx], heap_[bestChildIndex]);
+        idx = bestChildIndex;
+
+        childIndex = m_ary_ * idx + 1;
+        bestChildIndex = childIndex;
+      }
+      else
+      {
+        break;
+      }
+
+    }
 }
 
 

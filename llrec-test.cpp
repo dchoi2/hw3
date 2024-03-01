@@ -67,7 +67,17 @@ void dealloc(Node* head)
 //   function object struct declarations
 // -----------------------------------------------
 
-
+struct NodeFilter
+{
+    bool operator()(int val)
+    {
+        if(val %2 != 0)
+        {
+            return true;
+        }
+        return false;
+    }
+};
 
 
 
@@ -86,10 +96,24 @@ int main(int argc, char* argv[])
     print(head);
 
     // Test out your linked list code
+    Node* smaller = NULL;
+    Node* larger = NULL;
+
+    NodeFilter pred;
+    head = llfilter(head, pred);
+
+    print(head);
+
+    //llpivot(head, smaller, larger, 10);
+
+    // cout << "Smaller List: " << endl;
+    // print(smaller);
+
+    // cout << endl << "Bigger List: " << endl;
+    // print(larger);
 
 
-
-    
+    dealloc(head); // dealloc(smaller); dealloc(larger);
     return 0;
 
 }
