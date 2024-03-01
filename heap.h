@@ -79,7 +79,7 @@ template <typename T, typename PComparator>
 Heap<T,PComparator>::Heap(int m, PComparator c) : m_ary_(m), comp_(c)
 {
   if(m < 2) {
-    throw std::invalid_argument("Cannot have < binary heap");
+    throw std::invalid_argument("Cannot have less than a binary heap");
   }
 }
 
@@ -152,10 +152,20 @@ void Heap<T,PComparator>::pop()
 template <typename T, typename PComparator>
 void Heap<T,PComparator>::heapifyUp(size_t idx)
 {
-  while(idx > 0 && comp_(heap_[(idx - 1) / m_ary_], heap_[idx]))
+  // While the index doesn't go past the first, compare the current idx to the parent
+  // if it is less than, therefore returning true, swap
+  //    Update idx
+  while(idx > 0)
   {
-    std::swap(heap_[(idx - 1) / m_ary_], heap_[idx]);
-    idx = (idx - 1) / m_ary_;
+    if(comp_(heap_[idx], heap_[(idx - 1) / m_ary_]))
+    {
+      std::swap(heap_[idx], heap_[(idx - 1) / m_ary_]);
+      idx = (idx - 1) / m_ary_;
+    }    
+    else
+    {
+      break;
+    }
   }
 }
 
@@ -163,28 +173,33 @@ template <typename T, typename PComparator>
 void Heap<T,PComparator>::heapifyDown(size_t idx)
 {
     size_t childIndex = m_ary_ * idx + 1;
-    size_t bestChildIndex = childIndex;
 
+    // While the child does not exceed the size of the entire heap
     while(childIndex < heap_.size())
     {
+      size_t bestChildIndex = childIndex;
       // looking through all the children of the current node, find 
       //  "best" child to swap down with (either min or max, based on comp)
-      for(size_t i = 1; i < m_ary_ && (childIndex + i) < heap_.size(); ++i)
+      for(size_t i = 1; i < m_ary_; i++)
       {
-        if(comp_(heap_[bestChildIndex], heap_[childIndex + i]))
+        if(childIndex + i >= heap_.size())
         {
+          break;
+        }
+        else if(comp_(heap_[childIndex + i], heap_[bestChildIndex]))
+        {
+          // Set bestChild (smallest) to the smaller child idx
           bestChildIndex = childIndex + i;
         }
       }
 
       // check if a swap needs to occur
-      if(bestChildIndex < heap_.size() && comp_(heap_[bestChildIndex], heap_[idx]))
+      if(comp_(heap_[bestChildIndex], heap_[idx]))
       {
-        std::swap(heap_[idx], heap_[bestChildIndex]);
+        std::swap(heap_[bestChildIndex], heap_[idx]);
         idx = bestChildIndex;
 
         childIndex = m_ary_ * idx + 1;
-        bestChildIndex = childIndex;
       }
       else
       {

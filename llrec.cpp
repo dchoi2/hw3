@@ -8,6 +8,8 @@ void llpivot(Node *&head, Node *&smaller, Node *&larger, int pivot)
 {
   if(head == NULL)
   {
+    smaller = NULL;
+    larger = NULL;
     return;
   }
   else
@@ -17,15 +19,29 @@ void llpivot(Node *&head, Node *&smaller, Node *&larger, int pivot)
     Node* temp = head->next;
     head->next = nullptr;
 
+    Node* smallNext = nullptr;
+    Node* largeNext = nullptr;
+
+    // Head recurse with pivot to partition into smallNext and largeNext
+    llpivot(temp, smallNext, largeNext, pivot);
+
+    // On the way back up, if the value is less than pivot then build either 
+    // or larger
     if(head->val <= pivot)
     {
-      smaller = head;      
-      llpivot(temp, smaller->next, larger, pivot);
+      head->next = smallNext;
+      smaller = head;  
+      larger = largeNext;
     }
     else
     {
-      larger = head;
-      llpivot(temp, smaller, larger->next, pivot);
+      head->next = largeNext;
+      larger = head;  
+      smaller = smallNext;
     }
+
+
+    // Reset the head to NULL to process this element
+    head = NULL;
   }
 }
